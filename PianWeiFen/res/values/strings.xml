@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">偏微分</string>
+    <string name="title_main">新鲜事</string>
+    <string name="title_auth">微博登录</string>
+    
+    <string name="home_timeline">所有新鲜事</string>
+    <string name="pwf_timeline">分类新鲜事</string>
+    <string-array name="nav_list">
+        <item >@string/home_timeline</item>
+        <item >@string/pwf_timeline</item>
+    </string-array>
+    
+    <string name="profile_img">头像</string>
+    <string name="weibo_img">微博图片</string>
+    
+    <string name="error_get_home_timeline_">获取所有新鲜事失败：%s</string>
+</resources>
