@@ -76,6 +76,20 @@ public class StatusListAdapter extends BaseAdapter {
 		} else {
 			((TextView) view.findViewById(R.id.text))
 				.setText(status.text);
+			new RoboAsyncTask<Drawable>(mContext) {
+
+				@Override
+				public Drawable call() throws Exception {
+					return loadImageFromUrl(status.thumbnail_pic);
+				}
+
+				@Override
+				protected void onSuccess(Drawable thumbnail) throws Exception {
+					((ImageView) view.findViewById(R.id.text_image))
+						.setImageDrawable(thumbnail);
+				}
+				
+			}.execute();
 		}
 		
 		if (Strings.isEmpty(status.retweeted_status_text) && 
@@ -85,6 +99,20 @@ public class StatusListAdapter extends BaseAdapter {
 			((TextView) view.findViewById(R.id.retweeted_text))
 				.setText("@" + status.retweeted_status_user_screen_name + ": " +
 						status.retweeted_status_text);
+			new RoboAsyncTask<Drawable>(mContext) {
+
+				@Override
+				public Drawable call() throws Exception {
+					return loadImageFromUrl(status.retweeted_status_thumbnail_pic);
+				}
+
+				@Override
+				protected void onSuccess(Drawable thumbnail) throws Exception {
+					((ImageView) view.findViewById(R.id.retweeted_text_image))
+						.setImageDrawable(thumbnail);
+				}
+				
+			}.execute();
 		}
 		return view;
 	}

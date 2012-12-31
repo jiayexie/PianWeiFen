@@ -14,4 +14,5 @@
     <string name="weibo_img">微博图片</string>
     
     <string name="error_get_home_timeline_">获取所有新鲜事失败：%s</string>
+    <string name="error_get_pwf_timeline_">获取分类新鲜事失败：%s</string>
 </resources>
