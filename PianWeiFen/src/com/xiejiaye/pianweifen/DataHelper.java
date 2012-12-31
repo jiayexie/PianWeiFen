@@ -28,4 +28,8 @@ public class DataHelper {
 	public String getToken() {
 		return mPref.getString(KEY_TOKEN, null);
 	}
+	
+	public void clear() {
+		mPref.edit().clear().commit();
+	}
 }

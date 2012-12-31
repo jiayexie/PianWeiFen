@@ -8,6 +8,7 @@ import org.jsoup.Jsoup;
 
 import roboguice.inject.InjectView;
 import roboguice.util.RoboAsyncTask;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,6 +23,8 @@ import android.widget.ViewSwitcher;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -184,6 +187,25 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 		}.execute();
 	}
 	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getSupportMenuInflater().inflate(R.menu.activity_main, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_logout:
+			mDataHelper.clear();
+			startActivity(new Intent(this, AuthActivity.class));
+			finish();
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	private class TopicPagerAdapter extends FragmentPagerAdapter {
 
 		private List<TopicSet> mTopicSets;
@@ -216,6 +238,5 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 		public int getCount() {
 			return mTopicSets.size();
 		}
-		
 	}
 }
