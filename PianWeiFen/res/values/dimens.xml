@@ -3,6 +3,7 @@
     
     <dimen name="padding_small">3dp</dimen>
     <dimen name="padding_medium">10dp</dimen>
+    <dimen name="padding_large">15dp</dimen>
     
     <dimen name="profile_img_size">50dp</dimen>
     

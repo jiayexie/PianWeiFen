@@ -1,22 +1,26 @@
 package com.xiejiaye.pianweifen;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import roboguice.util.RoboAsyncTask;
 import roboguice.util.Strings;
+
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class StatusListAdapter extends BaseAdapter {
 	
@@ -53,7 +57,7 @@ public class StatusListAdapter extends BaseAdapter {
 
 			@Override
 			public Drawable call() throws Exception {
-				return loadImageFromUrl(status.user_profile_image_url);
+				return Utils.loadImageFromUrl(status.user_profile_image_url);
 			}
 
 			@Override
@@ -69,7 +73,7 @@ public class StatusListAdapter extends BaseAdapter {
 		((TextView) view.findViewById(R.id.user_screen_name))
 			.setText(status.user_screen_name);
 		((TextView) view.findViewById(R.id.created_at))
-			.setText(new SimpleDateFormat("MM-dd").format(status.created_at));
+			.setText(Utils.formattedDate(status.created_at));
 		
 		if (Strings.isEmpty(status.text) && Strings.isEmpty(status.thumbnail_pic)) {
 			view.findViewById(R.id.layout_origin).setVisibility(View.GONE);
@@ -80,7 +84,7 @@ public class StatusListAdapter extends BaseAdapter {
 
 				@Override
 				public Drawable call() throws Exception {
-					return loadImageFromUrl(status.thumbnail_pic);
+					return Utils.loadImageFromUrl(status.thumbnail_pic);
 				}
 
 				@Override
@@ -103,7 +107,7 @@ public class StatusListAdapter extends BaseAdapter {
 
 				@Override
 				public Drawable call() throws Exception {
-					return loadImageFromUrl(status.retweeted_status_thumbnail_pic);
+					return Utils.loadImageFromUrl(status.retweeted_status_thumbnail_pic);
 				}
 
 				@Override
@@ -116,16 +120,32 @@ public class StatusListAdapter extends BaseAdapter {
 		}
 		return view;
 	}
+	
+	public OnItemClickListener getOnItemClickListener(final ObjectMapper mapper,
+			final boolean upperPullToRefresh) {
+		return new OnItemClickListener() {
 
-	private Drawable loadImageFromUrl(String url) {
-		try {
-			InputStream input = new URL(url).openStream();
-			return Drawable.createFromStream(input, url);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				if (upperPullToRefresh) position--;
+				Intent intent = new Intent(mContext, StatusDetailActivity.class);
+				String status;
+				try {
+					status = mapper.writeValueAsString(mStatuses.get(position));
+					intent.putExtra(StatusDetailActivity.KEY_STATUS, status);
+					mContext.startActivity(intent);
+				} catch (JsonGenerationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JsonMappingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
 	}
 }

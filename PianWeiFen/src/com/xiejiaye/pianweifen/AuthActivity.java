@@ -58,6 +58,7 @@ public class AuthActivity extends RoboSherlockActivity {
 					}
 					mDataHelper.saveToken(url);
 					startActivity(new Intent(AuthActivity.this, MainActivity.class));
+					finish();
 				}
 			}
 		});

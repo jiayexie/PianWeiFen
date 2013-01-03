@@ -139,8 +139,10 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 			protected void onSuccess(String response) throws Exception {
 				Map<String, List<Status>> map = mMapper.readValue(response, 
 						new TypeReference<Map<String, List<Status>>>(){});
-				mListHome.setAdapter(new StatusListAdapter(getContext(),
-						map.get("statuses")));
+				StatusListAdapter adapter = new StatusListAdapter(getContext(), 
+						map.get("statuses"));
+				mListHome.setAdapter(adapter);
+				mListHome.setOnItemClickListener(adapter.getOnItemClickListener(mMapper, true));
 			}
 			
 		}.execute();
@@ -227,10 +229,12 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 				@Override
 				public void onViewCreated(View view, Bundle savedInstanceState) {
 					super.onViewCreated(view, savedInstanceState);
-					setListAdapter(new StatusListAdapter(getActivity(), 
-							mTopicSets.get(position).statuses));
+					StatusListAdapter adapter = new StatusListAdapter(getActivity(), 
+							mTopicSets.get(position).statuses);
+					setListAdapter(adapter);
+					getListView().setOnItemClickListener(
+							adapter.getOnItemClickListener(mMapper, false));
 				}
-				
 			};
 		}
 
