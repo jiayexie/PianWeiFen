@@ -8,6 +8,9 @@ import org.jsoup.Jsoup;
 
 import roboguice.inject.InjectView;
 import roboguice.util.RoboAsyncTask;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -17,9 +20,9 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.ViewSwitcher;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
@@ -38,10 +41,10 @@ import com.viewpagerindicator.TitlePageIndicator;
 
 public class MainActivity extends RoboSherlockFragmentActivity {
 
-	@InjectView(R.id.switcher)
-	private ViewSwitcher mSwitcher;
 	@InjectView(R.id.home_timeline)
 	private PullToRefreshListView mListHome;
+	@InjectView(R.id.pwf_timeline)
+	private LinearLayout mPwfTimeline;
 	@InjectView(R.id.title)
 	private TitlePageIndicator mIndicator;
 	@InjectView(R.id.pager)
@@ -91,13 +94,19 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 					public boolean onNavigationItemSelected(int itemPosition, long itemId) {
 						switch (itemPosition) {
 						case 0:
-							mSwitcher.setDisplayedChild(0);
+							mListHome.setVisibility(View.VISIBLE);
+							mPwfTimeline.setVisibility(View.GONE);
 							displayHomeTimeline(false);
 							return true;
 						case 1:
-							mSwitcher.setDisplayedChild(1);
+							mListHome.setVisibility(View.GONE);
+							mPwfTimeline.setVisibility(View.VISIBLE);
 							displayCategoriedTimeline(false);
 							return true;
+						case 2:
+							mListHome.setVisibility(View.GONE);
+							mPwfTimeline.setVisibility(View.VISIBLE);
+							displayCategoriedTimelineDemo(false);
 						default:
 							return false;
 						}
@@ -153,7 +162,7 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 
 			@Override
 			public String call() throws Exception {
-				return Jsoup.connect("http://www.pkucada.org:8088/statuses/pwf_timeline.php")
+				return Jsoup.connect("http://www.pkucada.org:8089/wdm/statuses/workspace/pwf_timeline.php")
 						.data("access_token", mDataHelper.getToken())
 						.method(Method.GET).execute().body();
 			}
@@ -184,6 +193,49 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 						new TypeReference<List<TopicSet>>() {});
 				mPager.getRefreshableView().setAdapter(new TopicPagerAdapter(topicSets));
 				mIndicator.setViewPager(mPager.getRefreshableView());
+				mIndicator.notifyDataSetChanged();
+			}
+			
+		}.execute();
+	}
+	
+	private void displayCategoriedTimelineDemo(final boolean fromPullToRefresh) {
+		new RoboAsyncTask<String>(this) {
+
+			@Override
+			public String call() throws Exception {
+				return Jsoup.connect("http://www.pkucada.org:8089/wdm/statuses/pwf_timeline.php")
+						.data("access_token", mDataHelper.getToken())
+						.method(Method.GET).execute().body();
+			}
+
+			@Override
+			protected void onException(Exception e) throws RuntimeException {
+				Toast.makeText(getContext(), 
+						getString(R.string.error_get_pwf_timeline_, e.toString()),
+						Toast.LENGTH_LONG).show();
+			}
+
+			@Override
+			protected void onFinally() throws RuntimeException {
+				setSupportProgressBarIndeterminateVisibility(false);
+				if (fromPullToRefresh) {
+					mPager.onRefreshComplete();
+				}
+			}
+
+			@Override
+			protected void onPreExecute() throws Exception {
+				setSupportProgressBarIndeterminateVisibility(true);
+			}
+
+			@Override
+			protected void onSuccess(String response) throws Exception {
+				List<TopicSet> topicSets = mMapper.readValue(response, 
+						new TypeReference<List<TopicSet>>() {});
+				mPager.getRefreshableView().setAdapter(new TopicPagerAdapter(topicSets));
+				mIndicator.setViewPager(mPager.getRefreshableView());
+				mIndicator.notifyDataSetChanged();
 			}
 			
 		}.execute();
@@ -198,6 +250,9 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case R.id.menu_init:
+			init(mDataHelper.getToken());
+			return true;
 		case R.id.menu_logout:
 			mDataHelper.clear();
 			startActivity(new Intent(this, AuthActivity.class));
@@ -242,5 +297,49 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 		public int getCount() {
 			return mTopicSets.size();
 		}
+	}
+	
+	private void init(final String token) {
+		new RoboAsyncTask<Void>(this) {
+
+			private ProgressDialog progress;
+			
+			@Override
+			public Void call() throws Exception {
+				Jsoup.connect("http://www.pkucada.org:8089/wdm/statuses/workspace/init.php")
+					.data("access_token", token)
+					.timeout(60000)
+					.method(Method.GET).execute();
+				return null;
+			}
+
+			@Override
+			protected void onFinally() throws RuntimeException {
+				progress.dismiss();
+			}
+
+			@Override
+			protected void onPreExecute() throws Exception {
+				progress = new ProgressDialog(MainActivity.this);
+				progress.setMessage(getString(R.string.initializing));
+				progress.setIndeterminate(true);
+				progress.setOnCancelListener(new OnCancelListener() {
+					
+					@Override
+					public void onCancel(DialogInterface dialog) {
+						cancel(true);
+					}
+				});
+				progress.show();
+			}
+
+			@Override
+			protected void onSuccess(Void t) throws Exception {
+				mDataHelper.saveToken(token);
+				startActivity(new Intent(MainActivity.this, MainActivity.class));
+				finish();
+			}
+			
+		}.execute();
 	}
 }
