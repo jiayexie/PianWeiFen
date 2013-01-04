@@ -12,7 +12,6 @@
     <string-array name="nav_list">
         <item >@string/home_timeline</item>
         <item >@string/pwf_timeline</item>
-        <item >@string/pwf_timeline_demo</item>
     </string-array>
     
     <string name="profile_img">头像</string>

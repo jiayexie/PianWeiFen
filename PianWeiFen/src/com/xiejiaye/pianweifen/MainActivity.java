@@ -85,7 +85,7 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 				getSupportActionBar().getThemedContext(), 
 				R.layout.sherlock_spinner_item, 
 				getResources().getStringArray(R.array.nav_list));
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		adapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
 		getSupportActionBar().setListNavigationCallbacks(
 				adapter, 
 				new OnNavigationListener() {
