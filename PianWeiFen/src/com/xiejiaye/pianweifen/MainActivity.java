@@ -119,7 +119,7 @@ public class MainActivity extends RoboSherlockFragmentActivity {
 
 			@Override
 			public String call() throws Exception {
-				return Jsoup.connect("http://www.pkucada.org:8088/statuses/home_timeline.php")
+				return Jsoup.connect("http://www.pkucada.org:8089/wdm/statuses/home_timeline.php")
 					.data("access_token", mDataHelper.getToken())
 					.method(Method.GET).execute().body();
 			}
